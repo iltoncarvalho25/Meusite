@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jesu Semi Joias</title>
+  <style>
+    :root {
+      --dourado: #bfa046;
+      --branco: #ffffff;
+    }
+    body {
+      background-color: var(--branco);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: var(--dourado);
+    }
+    header {
+      background-color: var(--dourado);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    main {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+    .produto {
+      border: 2px solid var(--dourado);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      background-color: var(--branco);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .produto img {
+      width: 100%;
+      height: 200px;
+      object-fit: contain; /* Agora mostra a imagem sem cortar */
+      border-radius: 10px;
+      background-color: #f9f9f9; /* Fundo para imagens menores */
+    }
+    .produto h3 {
+      margin: 0.5rem 0;
+      font-size: 1.2rem;
+    }
+    .produto p {
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      color: #777;
+    }
+    .botoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .botoes button, .botoes a {
+      background-color: var(--dourado);
+      border: none;
+      padding: 0.5rem 1rem;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .botoes button:hover, .botoes a:hover {
+      background-color: #a88d34;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: var(--dourado);
+      color: white;
+      margin-top: 2rem;
+    }
+    .redes {
+      margin-top: 1rem;
+    }
+    .redes a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+    }
+    .upload {
+      text-align: center;
+      margin: 2rem;
+      display: none;
+    }
+    .upload button {
+      background-color: var(--dourado);
+      color: white;
+      padding: 1rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .upload button:hover {
+      background-color: #a88d34;
+    }
+    #adminButton, #logoutButton {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 10px;
+      text-decoration: underline;
+    }
+    #adminButton:hover, #logoutButton:hover {
+      color: #eee;
+    }
+    #logoutButton {
+      display: none;
+    }
+    @media (max-width: 600px) {
+      main {
+        padding: 1rem;
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    Jesu Semi Joias
+  </header>
+
+  <main id="produtos">
+    <!-- Produtos aparecem aqui -->
+  </main>
+
+  <div class="upload" id="areaUpload">
+    <input type="file" id="seletorImagem" accept="image/*" style="display: none;" onchange="adicionarProduto(event)">
+    <button onclick="document.getElementById('seletorImagem').click()">Selecionar Nova Joia</button>
+  </div>
+
+  <footer>
+    Fale conosco
+    <div class="redes">
+      <a href="https://wa.me/5599991788167" target="_blank">WhatsApp</a> |
+      <a href="https://instagram.com/Jesu_semijoias" target="_blank">Instagram</a>
+    </div>
+    <div>
+      <button id="adminButton" onclick="ativarAdmin()">Área do Administrador</button>
+      <button id="logoutButton" onclick="sairAdmin()">Sair do Administrador</button>
+    </div>
+  </footer>
+
+  <script>
+    let produtos = [];
+    const seuNumeroWhatsApp = '5599991788167'; // Seu número de WhatsApp
+    let administrador = false;
+
+    const container = document.getElementById('produtos');
+    const areaUpload = document.getElementById('areaUpload');
+    const adminButton = document.getElementById('adminButton');
+    const logoutButton = document.getElementById('logoutButton');
+
+    function salvarProdutos() {
+      localStorage.setItem('produtos', JSON.stringify(produtos));
+    }
+
+    function carregarProdutos() {
+      const dados = localStorage.getItem('produtos');
+      if (dados) {
+        produtos = JSON.parse(dados);
+      }
+    }
+
+    function renderizarProdutos() {
+      container.innerHTML = "";
+      produtos.forEach(produto => {
+        const div = document.createElement('div');
+        div.className = 'produto';
+        div.innerHTML = `
+          <img src="${produto.imagem}" alt="${produto.nome}">
+          <h3>${produto.nome}</h3>
+          <p>${produto.preco}</p>
+          <div class="botoes">
+            <a href="https://wa.me/${seuNumeroWhatsApp}?text=Olá!%20Gostei%20da%20joia%20${encodeURIComponent(produto.nome)}" target="_blank">Comprar WhatsApp</a>
+            ${administrador ? `<button onclick="editarProduto(${produto.id})">Editar</button><button onclick="excluirProduto(${produto.id})">Excluir</button>` : ""}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function adicionarProduto(event) {
+      const arquivo = event.target.files[0];
+      if (arquivo) {
+        const leitor = new FileReader();
+        leitor.onload = function(e) {
+          const imagemUrl = e.target.result;
+          const nome = prompt("Digite o nome da joia:");
+          const preco = prompt("Digite o preço da joia:");
+          if (nome && preco) {
+            const novoProduto = {
+              id: Date.now(),
+              nome: nome,
+              preco: preco,
+              imagem: imagemUrl
+            };
+            produtos.push(novoProduto);
+            salvarProdutos();
+            renderizarProdutos();
+          }
+        };
+        leitor.readAsDataURL(arquivo);
+      }
+    }
+
+    function editarProduto(id) {
+      const produto = produtos.find(p => p.id === id);
+      const novoNome = prompt("Novo nome:", produto.nome);
+      const novoPreco = prompt("Novo preço:", produto.preco);
+      if (novoNome && novoPreco) {
+        produto.nome = novoNome;
+        produto.preco = novoPreco;
+        salvarProdutos();
+        renderizarProdutos();
+      }
+    }
+
+    function excluirProduto(id) {
+      const index = produtos.findIndex(p => p.id === id);
+      if (index !== -1) {
+        produtos.splice(index, 1);
+        salvarProdutos();
+        renderizarProdutos();
+      }
+    }
+
+    function ativarAdmin() {
+      const senha = prompt("Digite a senha de administrador:");
+      if (senha === "Israel") {
+        administrador = true;
+        areaUpload.style.display = "block";
+        adminButton.style.display = "none";
+        logoutButton.style.display = "inline";
+        renderizarProdutos();
+        alert("Modo administrador ativado!");
+      } else {
+        alert("Senha incorreta!");
+      }
+    }
+
+    function sairAdmin() {
+      administrador = false;
+      areaUpload.style.display = "none";
+      adminButton.style.display = "inline";
+      logoutButton.style.display = "none";
+      renderizarProdutos();
+      alert("Você saiu do modo administrador.");
+    }
+
+    window.onload = function() {
+      carregarProdutos();
+      renderizarProdutos();
+    }
+  </script>
+
+</body>
+</html>
