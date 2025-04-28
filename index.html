@@ -3,30 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jesus SemiJoias</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-
+  <title>Jesu SemiJoias</title>
   <style>
     :root {
       --dourado: #bfa046;
       --branco: #ffffff;
     }
     body {
-      background: linear-gradient(to bottom, #ffffff, #fff8e1);
-      font-family: 'Montserrat', sans-serif;
+      background-color: var(--branco);
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       color: var(--dourado);
-      transition: all 0.3s ease;
     }
     header {
       background-color: var(--dourado);
       color: white;
       text-align: center;
-      padding: 1.5rem;
-      font-size: 2.5rem;
-      font-family: 'Playfair Display', serif;
+      padding: 1rem;
+      font-size: 2rem;
       font-weight: bold;
     }
     main {
@@ -37,23 +32,20 @@
     }
     .produto {
       border: 2px solid var(--dourado);
-      border-radius: 15px;
+      border-radius: 10px;
       padding: 1rem;
       text-align: center;
       background-color: var(--branco);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      transition: transform 0.3s;
-    }
-    .produto:hover {
-      transform: scale(1.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .produto img {
       width: 100%;
       height: 200px;
       object-fit: contain;
-      border-radius: 15px;
+      border-radius: 10px;
       background-color: #f9f9f9;
-      margin-bottom: 10px;
     }
     .produto h3 {
       margin: 0.5rem 0;
@@ -74,18 +66,15 @@
     .botoes button, .botoes a {
       background-color: var(--dourado);
       border: none;
-      padding: 0.7rem 1.2rem;
+      padding: 0.5rem 1rem;
       color: white;
-      border-radius: 25px;
+      border-radius: 5px;
       cursor: pointer;
       text-decoration: none;
-      font-size: 1rem;
-      font-weight: bold;
-      transition: background-color 0.3s, box-shadow 0.3s;
+      font-size: 0.9rem;
     }
     .botoes button:hover, .botoes a:hover {
       background-color: #a88d34;
-      box-shadow: 0 0 10px #bfa046;
     }
     footer {
       text-align: center;
@@ -93,7 +82,6 @@
       background-color: var(--dourado);
       color: white;
       margin-top: 2rem;
-      font-size: 1rem;
     }
     .redes {
       margin-top: 1rem;
@@ -103,7 +91,6 @@
       text-decoration: none;
       color: white;
       font-weight: bold;
-      font-size: 1.1rem;
     }
     .upload {
       text-align: center;
@@ -115,10 +102,9 @@
       color: white;
       padding: 1rem;
       border: none;
-      border-radius: 25px;
-      font-size: 1.1rem;
+      border-radius: 5px;
+      font-size: 1rem;
       cursor: pointer;
-      transition: background-color 0.3s;
     }
     .upload button:hover {
       background-color: #a88d34;
@@ -127,7 +113,7 @@
       background: none;
       border: none;
       color: white;
-      font-size: 1rem;
+      font-size: 0.9rem;
       cursor: pointer;
       margin-top: 10px;
       text-decoration: underline;
@@ -146,16 +132,18 @@
     }
   </style>
 </head>
-
 <body>
 
-  <header>Jesus SemiJoias</header>
+  <header>
+    Jesu SemiJoias
+  </header>
 
-  <main id="produtos"></main>
+  <main id="produtos">
+    <!-- Produtos aparecem aqui -->
+  </main>
 
   <div class="upload" id="areaUpload">
-    <input type="file" id="seletorImagem" accept="image/*" style="display: none;" onchange="adicionarProduto(event)">
-    <button onclick="document.getElementById('seletorImagem').click()">Selecionar Nova Joia</button>
+    <button onclick="adicionarProduto()">Adicionar Nova Joia</button>
   </div>
 
   <footer>
@@ -209,97 +197,15 @@
       });
     }
 
-    function adicionarProduto(event) {
-      const arquivo = event.target.files[0];
-      if (!arquivo) return;
-
-      const formData = new FormData();
-      formData.append("image", arquivo);
-
-      fetch("https://api.imgur.com/3/image", {
-        method: "POST",
-        headers: {
-          Authorization: "Client-ID a6f54ec64abad1d"
-        },
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          const imagemUrl = data.data.link;
-          const nome = prompt("Digite o nome da joia:");
-          const preco = prompt("Digite o preço da joia:");
-          if (nome && preco) {
-            const novoProduto = {
-              id: Date.now(),
-              nome: nome,
-              preco: preco,
-              imagem: imagemUrl
-            };
-            produtos.push(novoProduto);
-            salvarProdutos();
-            renderizarProdutos();
-          }
-        } else {
-          alert("Erro ao enviar imagem para o Imgur.");
-          console.error(data);
-        }
-      })
-      .catch(error => {
-        alert("Erro ao enviar imagem.");
-        console.error(error);
-      });
-    }
-
-    function editarProduto(id) {
-      const produto = produtos.find(p => p.id === id);
-      const novoNome = prompt("Novo nome:", produto.nome);
-      const novoPreco = prompt("Novo preço:", produto.preco);
-      if (novoNome && novoPreco) {
-        produto.nome = novoNome;
-        produto.preco = novoPreco;
-        salvarProdutos();
-        renderizarProdutos();
-      }
-    }
-
-    function excluirProduto(id) {
-      const index = produtos.findIndex(p => p.id === id);
-      if (index !== -1) {
-        produtos.splice(index, 1);
-        salvarProdutos();
-        renderizarProdutos();
-      }
-    }
-
-    function ativarAdmin() {
-      const senha = prompt("Digite a senha de administrador:");
-      if (senha === "Israel") {
-        administrador = true;
-        areaUpload.style.display = "block";
-        adminButton.style.display = "none";
-        logoutButton.style.display = "inline";
-        renderizarProdutos();
-        alert("Modo administrador ativado!");
-      } else {
-        alert("Senha incorreta!");
-      }
-    }
-
-    function sairAdmin() {
-      administrador = false;
-      areaUpload.style.display = "none";
-      adminButton.style.display = "inline";
-      logoutButton.style.display = "none";
-      renderizarProdutos();
-      alert("Você saiu do modo administrador.");
-    }
-
-    window.onload = function() {
-      carregarProdutos();
-      renderizarProdutos();
-    }
-  </script>
-
-</body>
-</html>
+    function adicionarProduto() {
+      const imagemUrl = prompt("Digite o link da imagem da joia:");
+      const nome = prompt("Digite o nome da joia:");
+      const preco = prompt("Digite o preço da joia:");
+      if (imagemUrl && nome && preco) {
+        const novoProduto = {
+          id: Date.now(),
+          nome: nome,
+          preco: preco,
+          imagem: imagemUrl
+        };
+        produtos.push(novoProduto
