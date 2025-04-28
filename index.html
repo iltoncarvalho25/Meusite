@@ -43,9 +43,9 @@
     .produto img {
       width: 100%;
       height: 200px;
-      object-fit: contain;
+      object-fit: contain; /* Agora mostra a imagem sem cortar */
       border-radius: 10px;
-      background-color: #f9f9f9;
+      background-color: #f9f9f9; /* Fundo para imagens menores */
     }
     .produto h3 {
       margin: 0.5rem 0;
@@ -143,7 +143,8 @@
   </main>
 
   <div class="upload" id="areaUpload">
-    <button onclick="adicionarProduto()">Adicionar Nova Joia</button>
+    <input type="file" id="seletorImagem" accept="image/*" style="display: none;" onchange="adicionarProduto(event)">
+    <button onclick="document.getElementById('seletorImagem').click()">Selecionar Nova Joia</button>
   </div>
 
   <footer>
@@ -160,7 +161,7 @@
 
   <script>
     let produtos = [];
-    const seuNumeroWhatsApp = '5599991788167';
+    const seuNumeroWhatsApp = '5599991788167'; // Seu número de WhatsApp
     let administrador = false;
 
     const container = document.getElementById('produtos');
@@ -197,15 +198,79 @@
       });
     }
 
-    function adicionarProduto() {
-      const imagemUrl = prompt("Digite o link da imagem da joia:");
-      const nome = prompt("Digite o nome da joia:");
-      const preco = prompt("Digite o preço da joia:");
-      if (imagemUrl && nome && preco) {
-        const novoProduto = {
-          id: Date.now(),
-          nome: nome,
-          preco: preco,
-          imagem: imagemUrl
+    function adicionarProduto(event) {
+      const arquivo = event.target.files[0];
+      if (arquivo) {
+        const leitor = new FileReader();
+        leitor.onload = function(e) {
+          const imagemUrl = e.target.result;
+          const nome = prompt("Digite o nome da joia:");
+          const preco = prompt("Digite o preço da joia:");
+          if (nome && preco) {
+            const novoProduto = {
+              id: Date.now(),
+              nome: nome,
+              preco: preco,
+              imagem: imagemUrl
+            };
+            produtos.push(novoProduto);
+            salvarProdutos();
+            renderizarProdutos();
+          }
         };
-        produtos.push(novoProduto
+        leitor.readAsDataURL(arquivo);
+      }
+    }
+
+    function editarProduto(id) {
+      const produto = produtos.find(p => p.id === id);
+      const novoNome = prompt("Novo nome:", produto.nome);
+      const novoPreco = prompt("Novo preço:", produto.preco);
+      if (novoNome && novoPreco) {
+        produto.nome = novoNome;
+        produto.preco = novoPreco;
+        salvarProdutos();
+        renderizarProdutos();
+      }
+    }
+
+    function excluirProduto(id) {
+      const index = produtos.findIndex(p => p.id === id);
+      if (index !== -1) {
+        produtos.splice(index, 1);
+        salvarProdutos();
+        renderizarProdutos();
+      }
+    }
+
+    function ativarAdmin() {
+      const senha = prompt("Digite a senha de administrador:");
+      if (senha === "Israel") {
+        administrador = true;
+        areaUpload.style.display = "block";
+        adminButton.style.display = "none";
+        logoutButton.style.display = "inline";
+        renderizarProdutos();
+        alert("Modo administrador ativado!");
+      } else {
+        alert("Senha incorreta!");
+      }
+    }
+
+    function sairAdmin() {
+      administrador = false;
+      areaUpload.style.display = "none";
+      adminButton.style.display = "inline";
+      logoutButton.style.display = "none";
+      renderizarProdutos();
+      alert("Você saiu do modo administrador.");
+    }
+
+    window.onload = function() {
+      carregarProdutos();
+      renderizarProdutos();
+    }
+  </script>
+
+</body>
+</html>
